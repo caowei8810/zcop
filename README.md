@@ -1,172 +1,172 @@
 # ZeroCode Ontology Platform (ZCOP)
 
-ZeroCode Ontology Platform (ZCOP) は、グラフィカルな方法でオントロジーを定義し、ナレッジグラフを自動生成し、ビジネスプロセスを推論し、自然言語インターフェースで操作できる革新的なゼロコードビジネスシステム開発フレームワークです。
+ZeroCode Ontology Platform (ZCOP) is a revolutionary zero-code business system development framework that allows users to define ontologies through graphical methods, automatically generate knowledge graphs, infer business processes, and operate through natural language interfaces.
 
-## 主な特徴
+## Core Features
 
-### 🧠 オントロジー駆動開発
-- ドラッグアンドドロップ式グラフィカルインターフェースでエンティティ、プロパティ、リレーション、アクション、ルールを定義
-- 完全でクエリ可能でバージョン管理可能なナレッジグラフをリアルタイム生成・維持
-- 継承、ポリモーフィズム、複合プロパティ、計算プロパティ、列挙、計算プロパティなどの上級概念をサポート
-- 可視化リレーションシップグラフエディットをサポート
+### 🧠 Ontology-Driven Development
+- Drag-and-drop graphical interface to define entities, properties, relationships, actions and rules
+- Real-time generation and maintenance of complete, queryable, version-controlled knowledge graphs
+- Support for advanced concepts such as inheritance, polymorphism, composite properties, computed properties, enumerations, etc.
+- Support for visual relationship graph editing
 
-### 🤖 自然言語ビジネス操作
-- 統一されたChatUIインターフェースで、自然言語で任意のビジネスリクエストを発行
-- 意図自動解析 → ビジネスプロセス照合/動的編成 → Agentic実行エンジン呼び出し
-- 構造化された結果 + 自然言語サマリー + ビジュアライゼーションカード/テーブル/チャートを返却
-- マルチターン対話とコンテキスト理解をサポート
+### 🤖 Natural Language Business Operations
+- Unified ChatUI interface to initiate any business request in natural language
+- Automatic intent parsing → matching/dynamic orchestration of business processes → calling Agentic execution engine
+- Return structured results + natural language summaries + visual cards/tables/charts
+- Support for multi-turn conversations and contextual understanding
 
-### 🔁 自律計画エンジン
-- オントロジーモデル自動分析により、対応するビジネスワークフローを生成
-- 潜在的ビジネスシナリオを識別し、対応する処理プロセスを作成
-- CRUD操作、リレーションシップ管理、ルール適用などの自動化ワークフローをサポート
-- エンティティ間ビジネスプロセスをインテリジェントに生成
+### 🔁 Autonomous Planning Engine
+- Automatically analyze ontology models and generate corresponding business workflows
+- Identify potential business scenarios and create corresponding processing flows
+- Support automated workflows for CRUD operations, relationship management, rule application, etc.
+- Intelligent generation of cross-entity business processes
 
-### 🔁 自動モデル適応
-- オントロジーモデルが変更された場合、手動トリガーまたは自動全量再計画をサポート
-- システムは影響を受けるすべてのビジネスプロセス、アクション、ルールを自動的に再推論
-- 既存ビジネスの継続的可用性を保証し、新しいモデルに自動適応
+### 🔁 Automatic Model Adaptation
+- When the ontology model changes, support manual triggering or automatic full replanning
+- The system automatically re-reasons all affected business processes, actions, and rules
+- Ensure existing business remains continuously available and automatically adapts to new models
 
-### 📊 グラフ分析と洞察
-- リアルタイムグラフ統計分析（エンティティ分布、リレーションタイプ、プロパティ分析など）
-- ビジネスインサイト推奨（潜在的ビジネスチャンス、最適化提案など）
-- 可視化グラフ表示と探索
+### 📊 Graph Analysis and Insights
+- Real-time graph statistical analysis (entity distribution, relationship types, property analysis, etc.)
+- Business insight recommendations (potential business opportunities, optimization suggestions, etc.)
+- Visual graph display and exploration
 
-### 🏗️ エンタープライズアーキテクチャ
-- 完全なRBAC権限管理
-- マルチテナンシー対応
-- 監査ログとデータバックアップ
-- セルフホスティング・商用利用可能デプロイメント
-- 水平スケーリングとハイアベイラビリティデプロイメントをサポート
+### 🏗️ Enterprise Architecture
+- Complete RBAC permission management
+- Multi-tenant support
+- Audit logs and data backup
+- Self-hostable, commercial-grade deployment
+- Support horizontal scaling and high availability deployment
 
-## 技術スタック
+## Tech Stack
 
-### フロントエンド
+### Frontend
 - **React 18** + **TypeScript** + **Vite**
-- **Arco Design Pro** (優先) または **Ant Design Pro**
-- **React Flow** (オントロジーリレーションシップ図エディット)
-- **Monaco Editor** (アクションスクリプト/ルールエディット)
-- **TailwindCSS** + **Zustand** ステート管理
+- **Arco Design Pro** (preferred) or **Ant Design Pro**
+- **React Flow** (Ontology Relationship Graph Editing)
+- **Monaco Editor** (Action Script/Rule Editing)
+- **TailwindCSS** + **Zustand** State Management
 
-### バックエンド
+### Backend
 - **NestJS** (TypeScript)
 - **GraphQL** (Apollo Server)
 - **TypeORM**
-- **WebSocket** (リアルタイム同期オントロジー変更とAgent実行情報)
+- **WebSocket** (Real-time sync of ontology changes and Agent execution processes)
 
-### ストレージ
-- **Neo4j** (主ストレージ、Cypherクエリ対応)
-- **PostgreSQL** (メタデータストレージ)
-- **Redis** (オントロジー構造とホットデータキャッシュ)
-- **Qdrant** (ベクターデータベース)
+### Storage
+- **Neo4j** (Primary storage, supports Cypher queries)
+- **PostgreSQL** (Metadata storage)
+- **Redis** (Cache ontology structure and hot data)
+- **Qdrant** (Vector database)
 
 ### AI & Agentic
-- マルチモデルルーティング（OpenAI GPT-4o / Claude 3.5 Sonnet / Qwen など）
-- **LangGraph** (推奨) または CrewAI + LangChain で決定的、永続的、デバッグ可能なAgenticワークフロー構築
+- Multi-model routing (OpenAI GPT-4o / Claude 3.5 Sonnet / Qwen, etc.)
+- **LangGraph** (recommended) or CrewAI + LangChain to build deterministic, persistent, debuggable Agentic workflows
 
-## クイックスタート
+## Quick Start
 
-### 環境要件
+### Requirements
 - Node.js 18+
 - Docker & Docker Compose
-- 少なくとも 8GB メモリ
+- At least 8GB memory
 
-### インストール・デプロイメント
+### Installation & Deployment
 
-1. リポジトリをクローン
+1. Clone the repository
 ```bash
 git clone https://github.com/caowei8810/zcop.git
 cd zcop
 ```
 
-2. 環境変数を設定
+2. Configure environment variables
 ```bash
 cp .env.example .env
-# .env ファイルを編集し、APIキーとその他の設定を構成
+# Edit .env file to configure API keys and other settings
 ```
 
-3. サービスを起動
+3. Start services
 ```bash
 docker-compose -f deploy/docker-compose.yml up -d
 ```
 
-4. アプリケーションにアクセス
-- フロントエンド: http://localhost:5173
-- バックエンドAPI: http://localhost:3000
+4. Access the application
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:3000
 - GraphQL Playground: http://localhost:3000/graphql
 - Neo4j Browser: http://localhost:7474
 
-## 使用例
+## Usage Examples
 
-### 1. オントロジーモデル作成
-オントロジービルダーで、ドラッグアンドドロップでエンティティ、プロパティ、リレーションを生成：
+### 1. Create Ontology Model
+In the ontology builder, create entities, properties, and relationships through drag-and-drop:
 
 ```
-エンティティ: Customer
-プロパティ: name (STRING, REQUIRED), email (STRING, UNIQUE), status (ENUM: ['Prospect', 'Lead', 'Customer'])
+Entity: Customer
+Properties: name (STRING, REQUIRED), email (STRING, UNIQUE), status (ENUM: ['Prospect', 'Lead', 'Customer'])
 
-エンティティ: Order
-プロパティ: orderNo (STRING, UNIQUE, REQUIRED), amount (NUMBER, REQUIRED), status (ENUM)
+Entity: Order
+Properties: orderNo (STRING, UNIQUE, REQUIRED), amount (NUMBER, REQUIRED), status (ENUM)
 
-リレーション: Customer -> Order (ONE_TO_MANY, "places_orders")
+Relationship: Customer -> Order (ONE_TO_MANY, "places_orders")
 ```
 
-### 2. 自然言語操作
-ChatUIで、自然言語でビジネス操作を実行：
+### 2. Natural Language Operations
+In ChatUI, perform business operations using natural language:
 
-- "名前が張三の新規顧客を作成し、メールアドレスはzhangsan@example.com"
-- "状態が'Lead'であるすべての顧客を表示"
-- "張三様にiPhone 15製品を注文させる"
-- "顧客ID 123のすべての未出荷注文を表示"
-- "注文ORD-001に備考'優先処理'を追加"
+- "Create a new customer named Zhang San with email zhangsan@example.com"
+- "Show all customers with status 'Lead'"
+- "Create an order for customer Zhang San containing iPhone 15 product"
+- "Display all unshipped orders for customer ID 123"
+- "Add note 'Priority Processing' to order ORD-001"
 
-### 3. 自律計画
-システムは自動的にオントロジーモデルを分析し、対応するビジネスワークフローを生成：
-- 顧客CRUD操作
-- 注文処理プロセス
-- レポート生成ワークフロー
-- 承認プロセスなど
+### 3. Autonomous Planning
+The system automatically analyzes the ontology model and generates corresponding business workflows:
+- Customer CRUD operations
+- Order processing workflows
+- Report generation workflows
+- Approval processes, etc.
 
-## システムアーキテクチャ
+## System Architecture
 
 ```mermaid
 graph TB
-    subgraph "フロントエンド層"
+    subgraph "Frontend Layer"
         A["React 18 + TypeScript"]
         B["Arco Design Pro"]
-        C["React Flow (オントロジー編集器)"]
-        D["Monaco Editor (スクリプト)"]
-        E["Zustand ステート管理"]
-        F["WebSocket クライアント"]
+        C["React Flow (Ontology Editor)"]
+        D["Monaco Editor (Scripts)"]
+        E["Zustand State Management"]
+        F["WebSocket Client"]
     end
 
-    subgraph "バックエンド層"
-        G["NestJS APIサーバー"]
+    subgraph "Backend Layer"
+        G["NestJS API Server"]
         H["GraphQL (Apollo)"]
-        I["WebSocket サーバー"]
-        J["LangGraph Agenticエンジン"]
-        K["LLMルーター"]
+        I["WebSocket Server"]
+        J["LangGraph Agentic Engine"]
+        K["LLM Router"]
     end
 
-    subgraph "ストレージ層"
-        L["Neo4j (ナレッジグラフ)"]
-        M["PostgreSQL (メタデータ)"]
-        N["Redis (キャッシュ)"]
-        O["Qdrant (ベクターデータベース)"]
+    subgraph "Storage Layer"
+        L["Neo4j (Knowledge Graph)"]
+        M["PostgreSQL (Metadata)"]
+        N["Redis (Cache)"]
+        O["Qdrant (Vector Database)"]
     end
 
-    subgraph "外部サービス"
+    subgraph "External Services"
         P["OpenAI GPT-4o"]
         Q["Anthropic Claude 3.5"]
         R["Alibaba Qwen"]
-        S["Casdoor (認証)"]
+        S["Casdoor (Authentication)"]
     end
 
-    subgraph "Agenticワークフロー"
-        T["計画エージェント"]
-        U["意図抽出エージェント"]
-        V["編成エージェント"]
-        W["実行エージェント"]
+    subgraph "Agentic Workflows"
+        T["Planning Agent"]
+        U["Intent Extraction Agent"]
+        V["Orchestration Agent"]
+        W["Execution Agent"]
     end
 
     A --> G
@@ -205,52 +205,52 @@ graph TB
     O --> J
 ```
 
-## CRM例
+## CRM Example
 
-プロジェクトには、ZCOPで実際のビジネスシステムを構築する方法を示す完全なCRMシステム例が含まれています：
+The project includes a complete CRM system example showing how to build actual business systems with ZCOP:
 
-- **エンティティ**: Customer, Contact, Product, Order, OrderItem, Invoice, Interaction
-- **リレーション**: Customer -> Order (一対多), Order -> OrderItem (一対多), Product -> OrderItem (一対多)
-- **ビジネスプロセス**: 顧客管理、注文処理、請求書生成、インタラクション追跡など
-- **自然言語操作**: "顧客作成"、"注文下す"、"販売レポート生成"など
+- **Entities**: Customer, Contact, Product, Order, OrderItem, Invoice, Interaction
+- **Relationships**: Customer -> Order (One-to-many), Order -> OrderItem (One-to-many), Product -> OrderItem (One-to-many)
+- **Business Processes**: Customer management, order processing, invoice generation, interaction tracking, etc.
+- **Natural Language Operations**: "Create customer", "Place order", "Generate sales report", etc.
 
-## リスクと緩和策
+## Risks and Mitigation
 
-- **複雑性管理**: 変更影響分析とサンドボックス環境を提供
-- **パフォーマンス**: インテリジェントキャッシュ、グラフ分割、クエリ最適化
-- **セキュリティ**: 細かい権限制御、監査ログ
-- **AI信頼性**: 人間とAI協調、実行プレビュー、決定的フォールバック
-- **コンプライアンス**: 主要業界規制への対応
+- **Complexity Management**: Provide change impact analysis and sandbox environments
+- **Performance**: Intelligent caching, graph partitioning, query optimization
+- **Security**: Fine-grained permission control, audit logs
+- **AI Reliability**: Human-AI collaboration, execution preview, deterministic fallback
+- **Compliance**: Support for major industry regulations
 
-## 拡張方向
+## Extension Directions
 
-- **上級分析**: 予測モデリング、異常検知、推薦エンジン
-- **業界ソリューション**: 医療、金融、製造などの分野特化ソリューション
-- **コラボレーション機能**: リアルタイム共同作業、バージョン管理、変更承認
-- **統合能力**: 遺産システムコネクタ、APIマーケット
-- **モバイル対応**: オフライン機能、エッジコンピューティング
+- **Advanced Analytics**: Predictive modeling, anomaly detection, recommendation engines
+- **Industry Solutions**: Healthcare, finance, manufacturing domain-specific solutions
+- **Collaboration Features**: Real-time collaboration, version control, change approval
+- **Integration Capabilities**: Legacy system connectors, API marketplace
+- **Mobile Support**: Offline functionality, edge computing
 
-## 貢献
+## Contribution
 
-コミュニティの貢献を歓迎します！以下のガイドラインに従ってください：
+We welcome community contributions! Please follow these guidelines:
 
-1. リポジトリをフォーク
-2. 機能ブランチを作成
-3. 変更を実施
-4. 詳細な説明付きでプルリクエストを提出
-5. すべてのテストが通過することを確認
+1. Fork the repository
+2. Create a feature branch
+3. Make modifications
+4. Submit a pull request with detailed explanation
+5. Ensure all tests pass
 
-## ライセンス
+## License
 
-MIT License - 詳細は [LICENSE](LICENSE) ファイルを参照
+MIT License - See [LICENSE](LICENSE) file for details
 
-## サポート
+## Support
 
-サポートが必要な場合は：
-1. ドキュメントのFAQを確認
-2. GitHubリポジトリで問題を提出
-3. 公式チャネルで開発チームに連絡
+For support, please:
+1. Check the FAQ in the documentation
+2. Submit an issue in the GitHub repository
+3. Contact the development team through official channels
 
 ---
 
-ZCOPは、オントロジー駆動手法により、ビジネス担当者がコーディング不要でエンタープライズシステムを開発できるようにすることを目的としています。
+ZCOP aims to enable business personnel to develop enterprise-level systems without coding, achieving a true low-code/zero-code experience through ontology-driven methods.
