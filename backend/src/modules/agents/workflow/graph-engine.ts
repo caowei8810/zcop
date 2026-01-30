@@ -34,52 +34,102 @@ const tools = {
   createEntity: async (state: WorkflowState) => {
     console.log("Creating entity:", state.inputs);
     // In a real implementation, this would create an entity in Neo4j
-    return { 
-      status: "completed", 
-      entityId: `entity_${Date.now()}`,
-      entityData: state.inputs.data 
-    };
+    // This would connect to Neo4j and create the appropriate node
+    try {
+      // In a full implementation, we would use the Neo4j driver to create a node
+      // const result = await neo4jDriver.writeCypher(
+      //   `CREATE (n:${state.inputs.entityType} $properties) RETURN n`,
+      //   { properties: state.inputs.data }
+      // );
+      // const entity = result.records[0].get('n');
+      
+      return { 
+        status: "completed", 
+        entityId: `entity_${Date.now()}`,
+        entityData: state.inputs.data 
+      };
+    } catch (error) {
+      console.error("Error creating entity:", error);
+      throw error;
+    }
   },
 
   // Update an entity in the knowledge graph
   updateEntity: async (state: WorkflowState) => {
     console.log("Updating entity:", state.inputs);
     // In a real implementation, this would update an entity in Neo4j
-    return { 
-      status: "completed", 
-      entityId: state.inputs.id,
-      updatedFields: state.inputs.data 
-    };
+    try {
+      // const result = await neo4jDriver.writeCypher(
+      //   `MATCH (n) WHERE n.id = $id SET n += $properties RETURN n`,
+      //   { id: state.inputs.id, properties: state.inputs.data }
+      // );
+      
+      return { 
+        status: "completed", 
+        entityId: state.inputs.id,
+        updatedFields: state.inputs.data 
+      };
+    } catch (error) {
+      console.error("Error updating entity:", error);
+      throw error;
+    }
   },
 
   // Find entities in the knowledge graph
   findEntities: async (state: WorkflowState) => {
     console.log("Finding entities with query:", state.inputs.query);
     // In a real implementation, this would query Neo4j
-    return { 
-      status: "completed", 
-      results: [] // This would contain actual query results
-    };
+    try {
+      // const result = await neo4jDriver.readCypher(
+      //   `MATCH (n:${state.inputs.entityType}) WHERE ${state.inputs.query.whereClause} RETURN n LIMIT ${state.inputs.query.limit || 10}`
+      // );
+      // const entities = result.records.map(record => record.get('n'));
+      
+      return { 
+        status: "completed", 
+        results: [] // This would contain actual query results
+      };
+    } catch (error) {
+      console.error("Error finding entities:", error);
+      throw error;
+    }
   },
 
   // Execute a custom action
   executeCustomAction: async (state: WorkflowState) => {
     console.log("Executing custom action:", state.inputs.action);
     // In a real implementation, this would execute a custom action defined in the ontology
-    return { 
-      status: "completed", 
-      result: "Action executed successfully" 
-    };
+    try {
+      // This would look up the action definition and execute the appropriate function/script
+      // const actionDef = await getActionDefinition(state.inputs.actionId);
+      // return await executeActionImplementation(actionDef, state.inputs.params);
+      
+      return { 
+        status: "completed", 
+        result: "Action executed successfully" 
+      };
+    } catch (error) {
+      console.error("Error executing custom action:", error);
+      throw error;
+    }
   },
 
   // Apply business rules
   applyRules: async (state: WorkflowState) => {
     console.log("Applying business rules:", state.inputs.rules);
     // In a real implementation, this would apply rules defined in the ontology
-    return { 
-      status: "completed", 
-      ruleResults: [] 
-    };
+    try {
+      // This would evaluate the rules against the current state/data
+      // const ruleResults = await evaluateRules(state.inputs.rules, state.context);
+      
+      return { 
+        status: "completed", 
+        ruleResults: [] 
+      };
+    } catch (error) {
+      console.error("Error applying rules:", error);
+      throw error;
+    }
   }
 };
 

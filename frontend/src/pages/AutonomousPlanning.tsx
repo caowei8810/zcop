@@ -87,30 +87,59 @@ const AutonomousPlanning: React.FC = () => {
     }
   ];
 
-  const startPlanning = () => {
+  const startPlanning = async () => {
     setPlanningStatus('running');
     setProgress(0);
     setCurrentStep(0);
     
-    // Simulate planning progress
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        const newProgress = prev + 10;
-        if (newProgress >= 100) {
-          clearInterval(interval);
-          setPlanningStatus('completed');
-          return 100;
-        }
-        return newProgress;
-      });
+    try {
+      // In a real implementation, this would call the backend API
+      // const response = await fetch('/api/autonomous-planning', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({
+      //     // Parameters for the planning process
+      //   }),
+      // });
+      //
+      // const data = await response.json();
+      // 
+      // // Process the streaming response
+      // for await (const chunk of data) {
+      //   setProgress(chunk.progress);
+      //   setCurrentStep(chunk.currentStep);
+      //   // Update UI with intermediate results
+      // }
       
-      setCurrentStep(prev => {
-        if (prev < planningSteps.length - 1) {
-          return prev + 1;
-        }
-        return prev;
-      });
-    }, 800);
+      // Simulate planning progress for demo purposes
+      const interval = setInterval(() => {
+        setProgress(prev => {
+          const newProgress = prev + 10;
+          if (newProgress >= 100) {
+            clearInterval(interval);
+            setPlanningStatus('completed');
+            // In a real implementation, we would fetch the final results from the backend
+            // const results = await fetch('/api/generated-workflows');
+            // setGeneratedWorkflows(results.data);
+            return 100;
+          }
+          return newProgress;
+        });
+        
+        setCurrentStep(prev => {
+          if (prev < planningSteps.length - 1) {
+            return prev + 1;
+          }
+          return prev;
+        });
+      }, 800);
+    } catch (error) {
+      console.error('Error during planning:', error);
+      setPlanningStatus('idle');
+      Message.error('规划过程中出现错误，请重试');
+    }
   };
 
   const pausePlanning = () => {

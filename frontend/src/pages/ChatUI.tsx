@@ -21,6 +21,7 @@ import {
   IconPaperClip
 } from '@arco-design/web-react/icon';
 import { v4 as uuidv4 } from 'uuid';
+import { chatApi } from '../services/api';
 
 const { TextArea } = Input;
 const { Title, Text } = Typography;
@@ -102,45 +103,36 @@ const ChatUI: React.FC = () => {
     setLoading(true);
 
     try {
-      // Simulate API call to backend
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Call the backend API to process the natural language request
+      const response = await chatApi.sendMessage(inputValue, currentConversationId);
       
       // Update user message status
       setMessages(prev => prev.map(msg => 
         msg.id === newMessage.id ? { ...msg, status: 'delivered' } : msg
       ));
 
-      // Add agent response
+      // Add agent response from the backend
       const agentResponse: Message = {
         id: uuidv4(),
-        content: `我收到了您的消息："${inputValue}"。正在处理中...`,
+        content: response.content || '我收到了您的请求，正在处理中...',
         sender: 'agent',
         timestamp: new Date(),
         status: 'delivered',
-        type: 'text'
+        type: response.type || 'text',
+        data: response.data
       };
 
       setMessages(prev => [...prev, agentResponse]);
-      
-      // Simulate more complex response after delay
-      setTimeout(() => {
-        const detailedResponse: Message = {
-          id: uuidv4(),
-          content: `根据您的请求，我已经分析了您的本体模型。您可以通过以下方式实现所需功能：\n\n1. 使用客户实体的查询功能\n2. 应用相关的业务规则\n3. 执行相应的动作`,
-          sender: 'agent',
-          timestamp: new Date(),
-          status: 'delivered',
-          type: 'text'
-        };
-        
-        setMessages(prev => [...prev.slice(0, -1), detailedResponse]);
-        setLoading(false);
-      }, 1000);
+      setLoading(false);
     } catch (error) {
-      Message.error('发送消息失败，请重试');
+      console.error('Error sending message:', error);
+      
+      // Update user message status to error
       setMessages(prev => prev.map(msg => 
         msg.id === newMessage.id ? { ...msg, status: 'error' } : msg
       ));
+      
+      Message.error('发送消息失败，请重试');
       setLoading(false);
     }
   };
@@ -300,6 +292,7 @@ const ChatUI: React.FC = () => {
                         {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         {msg.status === 'sending' && ' • 发送中...'}
                         {msg.status === 'error' && ' • 发送失败'}
+                        {msg.status === 'delivered' && ` • ${msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
                       </div>
                     </div>
                     {msg.sender === 'user' && (
