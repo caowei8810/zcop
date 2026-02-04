@@ -10,17 +10,34 @@ import appConfig from './config/app.config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { HealthController } from './common/controllers/health.controller';
+import { MetricsController } from './common/controllers/metrics.controller';
+import { DataGovernanceController } from './common/controllers/data-governance.controller';
+import { MonitoringController } from './common/controllers/monitoring.controller';
 import { OntologyModule } from './modules/ontology/ontology.module';
 import { AgentsModule } from './modules/agents/agents.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { LoggerMiddleware } from './common/middlewares/logger.middleware';
+import { AuditService } from './common/services/audit.service';
+import { BackupService } from './common/services/backup.service';
+import { ErrorMonitoringService } from './common/services/error-monitoring.service';
+import { AuditLog } from './common/entities/audit-log.entity';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ 
       isGlobal: true,
       load: [appConfig],
+    }),
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: process.env.DB_HOST || 'localhost',
+      port: parseInt(process.env.DB_PORT) || 5432,
+      username: process.env.DB_USERNAME || 'postgres',
+      password: process.env.DB_PASSWORD || 'postgres',
+      database: process.env.DB_NAME || 'zcop',
+      entities: [__dirname + '/**/*.entity{.ts,.js}', AuditLog], // Include audit log entity
+      synchronize: true, // Only for development
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
@@ -34,16 +51,6 @@ import { LoggerMiddleware } from './common/middlewares/logger.middleware';
           path: '/graphql',
         },
       },
-    }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT) || 5432,
-      username: process.env.DB_USERNAME || 'postgres',
-      password: process.env.DB_PASSWORD || 'postgres',
-      database: process.env.DB_NAME || 'zcop',
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true, // Only for development
     }),
     Neo4jModule.forRoot({
       scheme: process.env.NEO4J_SCHEME || 'bolt',
@@ -62,9 +69,12 @@ import { LoggerMiddleware } from './common/middlewares/logger.middleware';
     AgentsModule,
     AuthModule,
   ],
-  controllers: [AppController, HealthController],
+  controllers: [AppController, HealthController, MetricsController, DataGovernanceController, MonitoringController],
   providers: [
     AppService,
+    AuditService,
+    BackupService,
+    ErrorMonitoringService,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

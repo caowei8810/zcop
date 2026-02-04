@@ -48,6 +48,58 @@ ZeroCode Ontology Platform (ZCOP) is a revolutionary zero-code business system d
 - Health check endpoints for monitoring
 - Environment-based configuration management
 
+## Enterprise-Grade Features
+
+### Security & Compliance
+- JWT-based authentication with refresh token mechanism
+- Role-based access control (RBAC) with granular permissions
+- Password encryption with bcrypt
+- Rate limiting to prevent API abuse
+- Input validation and sanitization
+- Security headers (Helmet) to protect against common attacks
+- CORS configuration for secure cross-origin requests
+- Data encryption and privacy controls
+
+### Data Governance & Compliance
+- Comprehensive audit logging system
+- Data classification and sensitivity analysis
+- GDPR/CCPA compliance tools
+- Automated data retention policies
+- Data lineage tracking
+- Privacy impact assessments
+
+### Monitoring & Observability
+- Comprehensive request logging
+- Health check endpoints
+- Performance monitoring and metrics
+- Error tracking and alerting system
+- System performance dashboards
+- Real-time activity monitoring
+- Resource utilization tracking
+
+### Scalability & Performance
+- Microservice architecture
+- Container-ready with Docker
+- Database connection pooling
+- Redis caching layer
+- Horizontal scaling support
+- Load balancing capabilities
+- Performance optimization tools
+
+### Configuration Management
+- Environment-based configuration
+- Centralized configuration management
+- Secure credential handling
+- Dynamic configuration reloading
+- Feature flag management
+
+### Data Protection & Recovery
+- Automated backup and recovery system
+- Point-in-time recovery capabilities
+- Disaster recovery planning
+- Data integrity verification
+- Backup encryption and compression
+
 ## Tech Stack
 
 ### Frontend
@@ -73,33 +125,6 @@ ZeroCode Ontology Platform (ZCOP) is a revolutionary zero-code business system d
 ### AI & Agentic
 - Multi-model routing (OpenAI GPT-4o / Claude 3.5 Sonnet / Qwen, etc.)
 - **LangGraph** (recommended) or CrewAI + LangChain to build deterministic, persistent, debuggable Agentic workflows
-
-## Commercial-Grade Features
-
-### Security
-- JWT-based authentication with refresh token mechanism
-- Role-based access control (RBAC)
-- Password encryption with bcrypt
-- Rate limiting to prevent API abuse
-- Input validation and sanitization
-
-### Monitoring & Observability
-- Comprehensive request logging
-- Health check endpoints
-- Performance monitoring ready
-- Error handling and reporting
-
-### Scalability
-- Microservice architecture
-- Container-ready with Docker
-- Database connection pooling
-- Redis caching layer
-- Horizontal scaling support
-
-### Configuration Management
-- Environment-based configuration
-- Centralized configuration management
-- Secure credential handling
 
 ## Quick Start
 
@@ -130,10 +155,12 @@ docker-compose -f deploy/docker-compose.yml up -d
 4. Access the application
 - Frontend: http://localhost:5173
 - Backend API: http://localhost:3000
-- Health Check: http://localhost:3000/health
-- GraphQL Playground: http://localhost:3000/graphql
-- Neo4j Browser: http://localhost:7474
-- Adminer: http://localhost:8080
+- Health Check: http://localhost:3000/api/health
+- Metrics: http://localhost:3000/api/metrics/system-stats
+- Audit Logs: http://localhost:3000/api/metrics/audit-logs
+- Data Governance: http://localhost:3000/api/governance/compliance-report
+- Monitoring: http://localhost:3000/api/monitoring/errors
+- API Documentation: http://localhost:3000/swagger (development only)
 
 ## Usage Examples
 
@@ -159,7 +186,16 @@ In ChatUI, perform business operations using natural language:
 - "Display all unshipped orders for customer ID 123"
 - "Add note 'Priority Processing' to order ORD-001"
 
-### 3. Autonomous Planning
+### 3. Enterprise Operations
+Through the admin interface, manage enterprise features:
+
+- View audit logs: `/api/metrics/audit-logs`
+- Generate compliance reports: `/api/governance/compliance-report`
+- Monitor system health: `/api/health`
+- Perform data backup: `/api/governance/data-backup`
+- Classify sensitive data: `/api/governance/data-classification`
+
+### 4. Autonomous Planning
 The system automatically analyzes the ontology model and generates corresponding business workflows:
 - Customer CRUD operations
 - Order processing workflows
@@ -192,27 +228,37 @@ graph TB
         M["Rate Limiting"]
         N["Input Validation"]
         O["RBAC Authorization"]
+        P["Helmet Security Headers"]
+        Q["CORS Policy"]
+    end
+
+    subgraph "Enterprise Services"
+        R["Audit Service"]
+        S["Backup Service"]
+        T["Monitoring Service"]
+        U["Data Classification"]
+        V["Compliance Reporting"]
     end
 
     subgraph "Storage Layer"
-        P["Neo4j (Knowledge Graph)"]
-        Q["PostgreSQL (Metadata)"]
-        R["Redis (Cache)"]
-        S["Qdrant (Vector Database)"]
+        W["Neo4j (Knowledge Graph)"]
+        X["PostgreSQL (Metadata)"]
+        Y["Redis (Cache)"]
+        Z["Qdrant (Vector Database)"]
     end
 
     subgraph "External Services"
-        T["OpenAI GPT-4o"]
-        U["Anthropic Claude 3.5"]
-        V["Alibaba Qwen"]
-        W["Casdoor (Authentication)"]
+        AA["OpenAI GPT-4o"]
+        AB["Anthropic Claude 3.5"]
+        AC["Alibaba Qwen"]
+        AD["Casdoor (Authentication)"]
     end
 
     subgraph "Agentic Workflows"
-        X["Planning Agent"]
-        Y["Intent Extraction Agent"]
-        Z["Orchestration Agent"]
-        AA["Execution Agent"]
+        AE["Planning Agent"]
+        AF["Intent Extraction Agent"]
+        AG["Orchestration Agent"]
+        AH["Execution Agent"]
     end
 
     A --> G
@@ -225,36 +271,46 @@ graph TB
     G --> H
     G --> J
     G --> L
-    H --> P
-    H --> Q
+    G --> R
+    G --> T
+    H --> W
+    H --> X
     I --> F
-    J --> X
-    J --> Y
-    J --> Z
-    J --> AA
-    K --> T
-    K --> U
-    K --> V
+    J --> AE
+    J --> AF
+    J --> AG
+    J --> AH
+    K --> AA
+    K --> AB
+    K --> AC
     
     L --> G
     M --> G
     N --> G
     O --> G
+    P --> G
+    Q --> G
     
-    X --> P
-    X --> S
-    Y --> P
-    Y --> S
-    Z --> P
-    Z --> S
-    AA --> P
-    AA --> Q
-    AA --> R
+    R --> X
+    S --> X
+    T --> G
+    U --> G
+    V --> G
+    
+    AE --> W
+    AE --> Z
+    AF --> W
+    AF --> Z
+    AG --> W
+    AG --> Z
+    AH --> W
+    AH --> X
+    AH --> Y
 
-    W --> G
-    P --> R
-    Q --> R
-    S --> J
+    AD --> G
+    W --> Y
+    X --> Y
+    Z --> J
 ```
 
 ## CRM Example
@@ -266,6 +322,28 @@ The project includes a complete CRM system example showing how to build actual b
 - **Business Processes**: Customer management, order processing, invoice generation, interaction tracking, etc.
 - **Natural Language Operations**: "Create customer", "Place order", "Generate sales report", etc.
 
+## Enterprise Security & Compliance
+
+### Data Protection
+- End-to-end encryption for sensitive data
+- Secure key management
+- Data anonymization for testing environments
+- Regular security audits
+
+### Access Control
+- Multi-factor authentication (MFA)
+- Single sign-on (SSO) integration
+- Role-based permissions
+- Session management
+- IP whitelisting
+
+### Compliance Standards
+- GDPR compliance tools
+- CCPA compliance tools
+- SOC 2 Type II readiness
+- HIPAA compliance (with proper configuration)
+- PCI DSS considerations
+
 ## Risks and Mitigation
 
 - **Complexity Management**: Provide change impact analysis and sandbox environments
@@ -273,6 +351,8 @@ The project includes a complete CRM system example showing how to build actual b
 - **Security**: Fine-grained permission control, audit logs
 - **AI Reliability**: Human-AI collaboration, execution preview, deterministic fallback
 - **Compliance**: Support for major industry regulations
+- **Data Loss**: Automated backup and recovery procedures
+- **System Availability**: High availability and disaster recovery planning
 
 ## Extension Directions
 
