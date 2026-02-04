@@ -32,12 +32,21 @@ ZeroCode Ontology Platform (ZCOP) is a revolutionary zero-code business system d
 - Business insight recommendations (potential business opportunities, optimization suggestions, etc.)
 - Visual graph display and exploration
 
+### 🔐 Enterprise Security & Authentication
+- Complete RBAC permission management
+- JWT-based authentication with refresh tokens
+- Secure password hashing with bcrypt
+- Rate limiting to prevent abuse
+- Comprehensive logging and audit trails
+
 ### 🏗️ Enterprise Architecture
 - Complete RBAC permission management
 - Multi-tenant support
 - Audit logs and data backup
 - Self-hostable, commercial-grade deployment
 - Support horizontal scaling and high availability deployment
+- Health check endpoints for monitoring
+- Environment-based configuration management
 
 ## Tech Stack
 
@@ -52,6 +61,7 @@ ZeroCode Ontology Platform (ZCOP) is a revolutionary zero-code business system d
 - **NestJS** (TypeScript)
 - **GraphQL** (Apollo Server)
 - **TypeORM**
+- **Passport.js** + **JWT** (Authentication)
 - **WebSocket** (Real-time sync of ontology changes and Agent execution processes)
 
 ### Storage
@@ -63,6 +73,33 @@ ZeroCode Ontology Platform (ZCOP) is a revolutionary zero-code business system d
 ### AI & Agentic
 - Multi-model routing (OpenAI GPT-4o / Claude 3.5 Sonnet / Qwen, etc.)
 - **LangGraph** (recommended) or CrewAI + LangChain to build deterministic, persistent, debuggable Agentic workflows
+
+## Commercial-Grade Features
+
+### Security
+- JWT-based authentication with refresh token mechanism
+- Role-based access control (RBAC)
+- Password encryption with bcrypt
+- Rate limiting to prevent API abuse
+- Input validation and sanitization
+
+### Monitoring & Observability
+- Comprehensive request logging
+- Health check endpoints
+- Performance monitoring ready
+- Error handling and reporting
+
+### Scalability
+- Microservice architecture
+- Container-ready with Docker
+- Database connection pooling
+- Redis caching layer
+- Horizontal scaling support
+
+### Configuration Management
+- Environment-based configuration
+- Centralized configuration management
+- Secure credential handling
 
 ## Quick Start
 
@@ -93,8 +130,10 @@ docker-compose -f deploy/docker-compose.yml up -d
 4. Access the application
 - Frontend: http://localhost:5173
 - Backend API: http://localhost:3000
+- Health Check: http://localhost:3000/health
 - GraphQL Playground: http://localhost:3000/graphql
 - Neo4j Browser: http://localhost:7474
+- Adminer: http://localhost:8080
 
 ## Usage Examples
 
@@ -148,25 +187,32 @@ graph TB
         K["LLM Router"]
     end
 
+    subgraph "Security Layer"
+        L["JWT Authentication"]
+        M["Rate Limiting"]
+        N["Input Validation"]
+        O["RBAC Authorization"]
+    end
+
     subgraph "Storage Layer"
-        L["Neo4j (Knowledge Graph)"]
-        M["PostgreSQL (Metadata)"]
-        N["Redis (Cache)"]
-        O["Qdrant (Vector Database)"]
+        P["Neo4j (Knowledge Graph)"]
+        Q["PostgreSQL (Metadata)"]
+        R["Redis (Cache)"]
+        S["Qdrant (Vector Database)"]
     end
 
     subgraph "External Services"
-        P["OpenAI GPT-4o"]
-        Q["Anthropic Claude 3.5"]
-        R["Alibaba Qwen"]
-        S["Casdoor (Authentication)"]
+        T["OpenAI GPT-4o"]
+        U["Anthropic Claude 3.5"]
+        V["Alibaba Qwen"]
+        W["Casdoor (Authentication)"]
     end
 
     subgraph "Agentic Workflows"
-        T["Planning Agent"]
-        U["Intent Extraction Agent"]
-        V["Orchestration Agent"]
-        W["Execution Agent"]
+        X["Planning Agent"]
+        Y["Intent Extraction Agent"]
+        Z["Orchestration Agent"]
+        AA["Execution Agent"]
     end
 
     A --> G
@@ -178,31 +224,37 @@ graph TB
     
     G --> H
     G --> J
-    H --> L
-    H --> M
+    G --> L
+    H --> P
+    H --> Q
     I --> F
-    J --> T
-    J --> U
-    J --> V
-    J --> W
-    K --> P
-    K --> Q
-    K --> R
+    J --> X
+    J --> Y
+    J --> Z
+    J --> AA
+    K --> T
+    K --> U
+    K --> V
     
-    T --> L
-    T --> O
-    U --> L
-    U --> O
-    V --> L
-    V --> O
-    W --> L
-    W --> M
-    W --> N
+    L --> G
+    M --> G
+    N --> G
+    O --> G
+    
+    X --> P
+    X --> S
+    Y --> P
+    Y --> S
+    Z --> P
+    Z --> S
+    AA --> P
+    AA --> Q
+    AA --> R
 
-    S --> G
-    L --> N
-    M --> N
-    O --> J
+    W --> G
+    P --> R
+    Q --> R
+    S --> J
 ```
 
 ## CRM Example

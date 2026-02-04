@@ -3,6 +3,25 @@ import { Message } from '@/types';
 // API base URL
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
 
+// Global authentication state
+let authToken: string | null = localStorage.getItem('authToken');
+let currentUser: any = JSON.parse(localStorage.getItem('currentUser') || 'null');
+
+// Update auth header when token changes
+const updateAuthHeader = () => {
+  if (authToken) {
+    localStorage.setItem('authToken', authToken);
+  } else {
+    localStorage.removeItem('authToken');
+  }
+  
+  if (currentUser) {
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+  } else {
+    localStorage.removeItem('currentUser');
+  }
+};
+
 // Generic API call function
 const apiCall = async (endpoint: string, options: RequestInit = {}) => {
   const url = `${API_BASE_URL}${endpoint}`;
@@ -10,6 +29,7 @@ const apiCall = async (endpoint: string, options: RequestInit = {}) => {
   const defaultOptions: RequestInit = {
     headers: {
       'Content-Type': 'application/json',
+      ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
     },
   };
   
@@ -25,6 +45,13 @@ const apiCall = async (endpoint: string, options: RequestInit = {}) => {
   try {
     const response = await fetch(url, mergedOptions);
     
+    if (response.status === 401) {
+      // Token might be expired, clear auth state
+      logout();
+      window.location.href = '/login';
+      return null;
+    }
+    
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -35,6 +62,92 @@ const apiCall = async (endpoint: string, options: RequestInit = {}) => {
     throw error;
   }
 };
+
+// Authentication API functions
+export const authApi = {
+  login: async (username: string, password: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Login failed');
+      }
+      
+      const data = await response.json();
+      
+      // Store token and user info
+      authToken = data.access_token;
+      currentUser = data.user;
+      updateAuthHeader();
+      
+      return data;
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
+  },
+
+  register: async (userData: { username: string; email: string; password: string; firstName?: string; lastName?: string }) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Registration failed');
+      }
+      
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw error;
+    }
+  },
+
+  logout: () => {
+    logout();
+  },
+
+  getCurrentUser: () => {
+    return currentUser;
+  },
+
+  isAuthenticated: () => {
+    return !!authToken;
+  },
+};
+
+// Logout function
+export const logout = () => {
+  authToken = null;
+  currentUser = null;
+  updateAuthHeader();
+};
+
+// Initialize auth from localStorage on module load
+if (typeof window !== 'undefined') {
+  const storedToken = localStorage.getItem('authToken');
+  const storedUser = localStorage.getItem('currentUser');
+  
+  if (storedToken) {
+    authToken = storedToken;
+  }
+  
+  if (storedUser) {
+    currentUser = JSON.parse(storedUser);
+  }
+}
 
 // Ontology API functions
 export const ontologyApi = {

@@ -4,12 +4,13 @@ services:
   # Frontend Application
   frontend:
     build:
-      context: ./frontend
+      context: ../frontend
       dockerfile: Dockerfile
     ports:
       - "5173:5173"
     environment:
       - NODE_ENV=production
+      - REACT_APP_API_URL=http://localhost:3000
     depends_on:
       - backend
     networks:
@@ -18,11 +19,22 @@ services:
   # Backend API Server
   backend:
     build:
-      context: ./backend
+      context: ../backend
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
     environment:
+      # Application configurations
+      - NODE_ENV=production
+      - PORT=3000
+      - JWT_SECRET=${JWT_SECRET:-default_super_secret_key_for_dev_only}
+      - JWT_EXPIRES_IN=24h
+      - CORS_ORIGIN=*
+      
+      # Rate limiting
+      - RATE_LIMIT_POINTS=100
+      - RATE_LIMIT_DURATION=60
+      
       # Database configurations
       - DB_HOST=postgres
       - DB_PORT=5432
@@ -45,17 +57,17 @@ services:
       - QDRANT_PORT=6334
       
       # LLM configurations (to be set by user)
-      - OPENAI_API_KEY=
-      - ANTHROPIC_API_KEY=
-      - QDRANT_API_KEY=
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - QDRANT_API_KEY=${QDRANT_API_KEY:-}
       
       # Casdoor configurations
       - CASDOOR_ENDPOINT=http://casdoor:8000
-      - CASDOOR_CLIENT_ID=
-      - CASDOOR_CLIENT_SECRET=
-      - CASDOOR_JWT_PUBLIC_KEY=
-      - CASDOOR_ORGANIZATION_NAME=
-      - CASDOOR_APPLICATION_NAME=
+      - CASDOOR_CLIENT_ID=${CASDOOR_CLIENT_ID:-}
+      - CASDOOR_CLIENT_SECRET=${CASDOOR_CLIENT_SECRET:-}
+      - CASDOOR_JWT_PUBLIC_KEY=${CASDOOR_JWT_PUBLIC_KEY:-}
+      - CASDOOR_ORGANIZATION_NAME=${CASDOOR_ORGANIZATION_NAME:-}
+      - CASDOOR_APPLICATION_NAME=${CASDOOR_APPLICATION_NAME:-}
     depends_on:
       - postgres
       - neo4j
@@ -73,11 +85,13 @@ services:
       - POSTGRES_DB=zcop_db
       - POSTGRES_USER=zcop_user
       - POSTGRES_PASSWORD=zcop_password
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init/postgres-init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ../init/postgres-init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - zcop-network
+    restart: unless-stopped
 
   # Neo4j Graph Database
   neo4j:
@@ -87,8 +101,9 @@ services:
       - "7687:7687"
     environment:
       - NEO4J_AUTH=neo4j/zcop_neo4j_password
-      - NEO4J_server_memory_heap_max__size=2G
-      - NEO4J_server_memory_pagecache_size=1G
+      - NEO4J_server_memory_heap_max__size=512M
+      - NEO4J_server_memory_pagecache_size=256M
+      - NEO4J_initial_dbms_user=neo4j
     volumes:
       - neo4j_data:/data
       - neo4j_logs:/logs
@@ -96,6 +111,7 @@ services:
       - neo4j_plugins:/plugins
     networks:
       - zcop-network
+    restart: unless-stopped
 
   # Redis Cache
   redis:
@@ -104,20 +120,24 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
-    command: redis-server --appendonly yes
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis_password}
     networks:
       - zcop-network
+    restart: unless-stopped
 
   # Qdrant Vector Database
   qdrant:
-    image: qdrant/qdrant:v1.10
+    image: qdrant/qdrant:latest
     ports:
       - "6333:6333"
       - "6334:6334"
+    environment:
+      - QDRANT_API_KEY=${QDRANT_API_KEY:-}
     volumes:
       - qdrant_data:/qdrant/storage
     networks:
       - zcop-network
+    restart: unless-stopped
 
   # Casdoor Authentication
   casdoor:
@@ -127,9 +147,10 @@ services:
     environment:
       - PORT=8000
     volumes:
-      - ./conf/app.conf:/conf/app.conf
+      - ../conf/app.conf:/conf/app.conf
     networks:
       - zcop-network
+    restart: unless-stopped
 
   # Adminer - Database Management Tool
   adminer:
@@ -139,8 +160,10 @@ services:
     environment:
       - ADMINER_DEFAULT_DB_DRIVER=pgsql
       - ADMINER_DEFAULT_SERVER=postgres
+      - ADMINER_PLUGINS='[\"login-servers\"]'
     networks:
       - zcop-network
+    restart: unless-stopped
 
 networks:
   zcop-network:
