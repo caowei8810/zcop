@@ -45,6 +45,7 @@
     "neo4j-driver": "^5.0.0",
     "pg": "^8.8.0",
     "redis": "^4.0.0",
+    "ioredis": "^5.3.2",
     "typeorm": "^0.3.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
