@@ -35,6 +35,7 @@ ZeroCode Ontology Platform (ZCOP) is a revolutionary zero-code business system d
 ### 🔐 Enterprise Security & Authentication
 - Complete RBAC permission management
 - JWT-based authentication with refresh tokens
+- Support for Casdoor SSO integration for enterprise identity management
 - Secure password hashing with bcrypt
 - Rate limiting to prevent abuse
 - Comprehensive logging and audit trails
@@ -47,6 +48,19 @@ ZeroCode Ontology Platform (ZCOP) is a revolutionary zero-code business system d
 - Support horizontal scaling and high availability deployment
 - Health check endpoints for monitoring
 - Environment-based configuration management
+
+### 🛡️ Advanced Data Governance
+- **Data Classification**: Automatic classification of data based on sensitivity levels (public, internal, confidential, restricted)
+- **Compliance Monitoring**: GDPR, CCPA and other regulatory compliance reporting and monitoring
+- **Data Lineage Tracking**: Complete visibility into data flow and transformation across systems
+- **Privacy Controls**: Data anonymization, pseudonymization and retention policies
+- **Data Quality Management**: Validation rules, quality scoring and issue tracking
+
+### 🔍 Vector Database Integration
+- **Qdrant Integration**: Full vector database capabilities for semantic search and similarity matching
+- **Embedding Generation**: Automatic creation of semantic embeddings for entities and relationships
+- **Semantic Search**: Natural language querying of knowledge graph content
+- **Similarity Matching**: Find related entities and patterns using vector similarity
 
 ## Enterprise-Grade Features
 
@@ -67,6 +81,8 @@ ZeroCode Ontology Platform (ZCOP) is a revolutionary zero-code business system d
 - Automated data retention policies
 - Data lineage tracking
 - Privacy impact assessments
+- Data quality monitoring and validation
+- Sensitive data discovery and protection
 
 ### Monitoring & Observability
 - Comprehensive request logging
@@ -126,6 +142,9 @@ ZeroCode Ontology Platform (ZCOP) is a revolutionary zero-code business system d
 - Multi-model routing (OpenAI GPT-4o / Claude 3.5 Sonnet / Qwen, etc.)
 - **LangGraph** (recommended) or CrewAI + LangChain to build deterministic, persistent, debuggable Agentic workflows
 
+### Identity Management
+- **Casdoor** integration for enterprise SSO and user management
+
 ## Quick Start
 
 ### Requirements
@@ -135,6 +154,14 @@ ZeroCode Ontology Platform (ZCOP) is a revolutionary zero-code business system d
 
 ### Installation & Deployment
 
+#### Option 1: Using Quick Start Script (Recommended)
+```bash
+git clone https://github.com/caowei8810/zcop.git
+cd zcop
+./start.sh
+```
+
+#### Option 2: Manual Setup
 1. Clone the repository
 ```bash
 git clone https://github.com/caowei8810/zcop.git
@@ -161,6 +188,15 @@ docker-compose -f deploy/docker-compose.yml up -d
 - Data Governance: http://localhost:3000/api/governance/compliance-report
 - Monitoring: http://localhost:3000/api/monitoring/errors
 - API Documentation: http://localhost:3000/swagger (development only)
+
+### Utility Scripts
+The project includes utility scripts for easier management:
+
+- `start.sh`: Starts all services with a single command
+- `stop.sh`: Stops all services gracefully
+- `status.sh`: Checks the status of all services
+- `check-health.sh`: Performs comprehensive health check of the platform
+- `DEPLOYMENT.md`: Detailed deployment guide
 
 ## Usage Examples
 
@@ -194,6 +230,8 @@ Through the admin interface, manage enterprise features:
 - Monitor system health: `/api/health`
 - Perform data backup: `/api/governance/data-backup`
 - Classify sensitive data: `/api/governance/data-classification`
+- Manage data quality: `/api/governance/data-quality-rules`
+- Track data lineage: `/api/governance/data-lineage/{entityId}`
 
 ### 4. Autonomous Planning
 The system automatically analyzes the ontology model and generates corresponding business workflows:
@@ -238,6 +276,9 @@ graph TB
         T["Monitoring Service"]
         U["Data Classification"]
         V["Compliance Reporting"]
+        WA["Data Governance"]
+        WB["Qdrant Vector DB"]
+        WC["Casdoor SSO"]
     end
 
     subgraph "Storage Layer"
@@ -273,6 +314,7 @@ graph TB
     G --> L
     G --> R
     G --> T
+    G --> WA
     H --> W
     H --> X
     I --> F
@@ -296,6 +338,9 @@ graph TB
     T --> G
     U --> G
     V --> G
+    WA --> G
+    WB --> J
+    WC --> G
     
     AE --> W
     AE --> Z
@@ -311,6 +356,7 @@ graph TB
     W --> Y
     X --> Y
     Z --> J
+    Z --> WA
 ```
 
 ## CRM Example
@@ -332,7 +378,7 @@ The project includes a complete CRM system example showing how to build actual b
 
 ### Access Control
 - Multi-factor authentication (MFA)
-- Single sign-on (SSO) integration
+- Single sign-on (SSO) integration with Casdoor
 - Role-based permissions
 - Session management
 - IP whitelisting

@@ -449,3 +449,407 @@ export const knowledgeGraphApi = {
     }),
   }).then(data => data.data.knowledgeGraph),
 };
+
+// Data Governance API functions
+export const dataGovernanceApi = {
+  // Data Classification
+  getClassifications: async (entityType?: string) => {
+    const url = entityType 
+      ? `${API_BASE_URL}/governance/data-classification?entityType=${entityType}`
+      : `${API_BASE_URL}/governance/data-classification`;
+      
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+      },
+    });
+
+    if (response.status === 401) {
+      logout();
+      window.location.href = '/login';
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch data classifications');
+    }
+
+    return await response.json();
+  },
+
+  createClassification: async (classificationData: any) => {
+    const response = await fetch(`${API_BASE_URL}/governance/data-classification`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+      },
+      body: JSON.stringify(classificationData),
+    });
+
+    if (response.status === 401) {
+      logout();
+      window.location.href = '/login';
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to create data classification');
+    }
+
+    return await response.json();
+  },
+
+  updateClassification: async (id: string, updateData: any) => {
+    const response = await fetch(`${API_BASE_URL}/governance/data-classification/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+      },
+      body: JSON.stringify(updateData),
+    });
+
+    if (response.status === 401) {
+      logout();
+      window.location.href = '/login';
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to update data classification');
+    }
+
+    return await response.json();
+  },
+
+  deleteClassification: async (id: string) => {
+    const response = await fetch(`${API_BASE_URL}/governance/data-classification/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+      },
+    });
+
+    if (response.status === 401) {
+      logout();
+      window.location.href = '/login';
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to delete data classification');
+    }
+
+    return await response.json();
+  },
+
+  // Compliance Reports
+  getComplianceReport: async (params?: { startDate?: string; endDate?: string; reportType?: string }) => {
+    const queryParams = new URLSearchParams(params as any);
+    const url = `${API_BASE_URL}/governance/compliance-report?${queryParams}`;
+    
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+      },
+    });
+
+    if (response.status === 401) {
+      logout();
+      window.location.href = '/login';
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch compliance report');
+    }
+
+    return await response.json();
+  },
+
+  runComplianceCheck: async (checkData: any) => {
+    const response = await fetch(`${API_BASE_URL}/governance/compliance-check`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+      },
+      body: JSON.stringify(checkData),
+    });
+
+    if (response.status === 401) {
+      logout();
+      window.location.href = '/login';
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to run compliance check');
+    }
+
+    return await response.json();
+  },
+
+  // Data Lineage
+  getDataLineage: async (entityId: string) => {
+    const response = await fetch(`${API_BASE_URL}/governance/data-lineage/${entityId}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+      },
+    });
+
+    if (response.status === 401) {
+      logout();
+      window.location.href = '/login';
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch data lineage');
+    }
+
+    return await response.json();
+  },
+
+  // Data Quality
+  getDataQualityScore: async (entityId: string) => {
+    const response = await fetch(`${API_BASE_URL}/governance/data-quality-score/${entityId}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+      },
+    });
+
+    if (response.status === 401) {
+      logout();
+      window.location.href = '/login';
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch data quality score');
+    }
+
+    return await response.json();
+  },
+
+  getDataQualityReport: async (params?: { entityType?: string; startDate?: string; endDate?: string }) => {
+    const queryParams = new URLSearchParams(params as any);
+    const url = `${API_BASE_URL}/governance/data-quality-report?${queryParams}`;
+    
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+      },
+    });
+
+    if (response.status === 401) {
+      logout();
+      window.location.href = '/login';
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch data quality report');
+    }
+
+    return await response.json();
+  },
+
+  createDataQualityRule: async (ruleData: any) => {
+    const response = await fetch(`${API_BASE_URL}/governance/data-quality-rule`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+      },
+      body: JSON.stringify(ruleData),
+    });
+
+    if (response.status === 401) {
+      logout();
+      window.location.href = '/login';
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to create data quality rule');
+    }
+
+    return await response.json();
+  },
+
+  getDataQualityRules: async (entityType?: string) => {
+    const url = entityType 
+      ? `${API_BASE_URL}/governance/data-quality-rules?entityType=${entityType}`
+      : `${API_BASE_URL}/governance/data-quality-rules`;
+      
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+      },
+    });
+
+    if (response.status === 401) {
+      logout();
+      window.location.href = '/login';
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch data quality rules');
+    }
+
+    return await response.json();
+  },
+
+  validateDataQuality: async (data: any) => {
+    const response = await fetch(`${API_BASE_URL}/governance/data-quality-validation`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (response.status === 401) {
+      logout();
+      window.location.href = '/login';
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to validate data quality');
+    }
+
+    return await response.json();
+  },
+
+  // Sensitive Data Discovery
+  discoverSensitiveData: async (scanScope?: string) => {
+    const url = scanScope 
+      ? `${API_BASE_URL}/governance/sensitive-data-discovery?scanScope=${scanScope}`
+      : `${API_BASE_URL}/governance/sensitive-data-discovery`;
+      
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+      },
+    });
+
+    if (response.status === 401) {
+      logout();
+      window.location.href = '/login';
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to discover sensitive data');
+    }
+
+    return await response.json();
+  },
+
+  // Privacy Controls
+  getDataPrivacyControls: async () => {
+    const response = await fetch(`${API_BASE_URL}/governance/data-privacy-controls`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+      },
+    });
+
+    if (response.status === 401) {
+      logout();
+      window.location.href = '/login';
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch data privacy controls');
+    }
+
+    return await response.json();
+  },
+
+  configureDataPrivacyControls: async (controls: any) => {
+    const response = await fetch(`${API_BASE_URL}/governance/data-privacy-controls`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+      },
+      body: JSON.stringify(controls),
+    });
+
+    if (response.status === 401) {
+      logout();
+      window.location.href = '/login';
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to configure data privacy controls');
+    }
+
+    return await response.json();
+  },
+
+  // Retention Policy
+  getRetentionPolicy: async (entityType?: string) => {
+    const url = entityType 
+      ? `${API_BASE_URL}/governance/retention-policy?entityType=${entityType}`
+      : `${API_BASE_URL}/governance/retention-policy`;
+      
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+      },
+    });
+
+    if (response.status === 401) {
+      logout();
+      window.location.href = '/login';
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch retention policy');
+    }
+
+    return await response.json();
+  },
+
+  setRetentionPolicy: async (policy: any) => {
+    const response = await fetch(`${API_BASE_URL}/governance/retention-policy`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+      },
+      body: JSON.stringify(policy),
+    });
+
+    if (response.status === 401) {
+      logout();
+      window.location.href = '/login';
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to set retention policy');
+    }
+
+    return await response.json();
+  },
+};

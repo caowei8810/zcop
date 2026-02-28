@@ -1,94 +1,62 @@
-import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../../modules/auth/guards/jwt-auth.guard';
-import { ErrorMonitoringService, AlertConfig } from '../services/error-monitoring.service';
+import { Controller, Get, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../modules/auth/guards/jwt-auth.guard';
+import { HealthService } from '../common/services/health.service';
 
 @ApiTags('Monitoring')
 @Controller('monitoring')
 export class MonitoringController {
-  constructor(private errorMonitoringService: ErrorMonitoringService) {}
+  constructor(private healthService: HealthService) {}
 
-  @UseGuards(JwtAuthGuard)
-  @Get('errors')
-  @ApiOperation({ summary: 'Get recent errors' })
-  @ApiResponse({ status: 200, description: 'Recent errors retrieved' })
-  async getRecentErrors(@Query('limit') limit: number = 50) {
-    const errors = await this.errorMonitoringService.getRecentErrors(limit);
-    return {
-      errors,
-      count: errors.length,
-      timestamp: new Date().toISOString(),
-    };
+  @Get('health')
+  @ApiOperation({ summary: 'Basic health check' })
+  @ApiResponse({ status: 200, description: 'Service is healthy' })
+  @ApiResponse({ status: 503, description: 'Service is unhealthy' })
+  async health() {
+    return this.healthService.check();
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('error-summary')
-  @ApiOperation({ summary: 'Get error summary' })
-  @ApiResponse({ status: 200, description: 'Error summary retrieved' })
-  async getErrorSummary() {
-    const summary = await this.errorMonitoringService.getErrorSummary();
-    return {
-      summary,
-      timestamp: new Date().toISOString(),
-    };
+  @Get('health/detailed')
+  @ApiOperation({ summary: 'Detailed health information' })
+  @ApiResponse({ status: 200, description: 'Detailed system status' })
+  async detailedHealth() {
+    return this.healthService.getDetailedStatus();
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Post('alerts/configure')
-  @ApiOperation({ summary: 'Configure error alerts' })
-  @ApiResponse({ status: 200, description: 'Alert configured successfully' })
-  async configureAlert(
-    @Body('name') name: string,
-    @Body('config') config: AlertConfig,
-  ) {
-    this.errorMonitoringService.setErrorAlert(name, config);
-    return {
-      message: 'Alert configured successfully',
-      name,
-      config,
-      timestamp: new Date().toISOString(),
-    };
+  @Get('health/database')
+  @ApiOperation({ summary: 'Database health check' })
+  @ApiResponse({ status: 200, description: 'Database status' })
+  async databaseHealth() {
+    return this.healthService.checkDatabase();
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Post('maintenance-mode')
-  @ApiOperation({ summary: 'Enable/disable maintenance mode' })
-  @ApiResponse({ status: 200, description: 'Maintenance mode updated' })
-  async setMaintenanceMode(
-    @Body('enabled') enabled: boolean,
-    @Body('reason') reason?: string,
-  ) {
-    // In a real implementation, this would toggle maintenance mode
-    // For now, we'll just return a mock response
-    return {
-      message: `Maintenance mode ${enabled ? 'enabled' : 'disabled'}`,
-      enabled,
-      reason: reason || 'No reason provided',
-      timestamp: new Date().toISOString(),
-    };
+  @Get('health/redis')
+  @ApiOperation({ summary: 'Redis health check' })
+  @ApiResponse({ status: 200, description: 'Redis status' })
+  async redisHealth() {
+    return this.healthService.checkRedis();
   }
 
+  @Get('health/memory')
+  @ApiOperation({ summary: 'Memory usage check' })
+  @ApiResponse({ status: 200, description: 'Memory status' })
+  async memoryHealth() {
+    return this.healthService.checkMemory();
+  }
+
+  @Get('metrics')
   @UseGuards(JwtAuthGuard)
-  @Get('system-performance')
-  @ApiOperation({ summary: 'Get system performance metrics' })
-  @ApiResponse({ status: 200, description: 'Performance metrics retrieved' })
-  async getSystemPerformance() {
-    const uptime = process.uptime();
-    const memoryUsage = process.memoryUsage();
-    const cpuUsage = process.cpuUsage ? process.cpuUsage() : { user: 0, system: 0 };
-    
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'System metrics (requires authentication)' })
+  @ApiResponse({ status: 200, description: 'System metrics' })
+  async metrics() {
     return {
-      performance: {
-        uptime,
-        memory: {
-          rss: memoryUsage.rss,
-          heapTotal: memoryUsage.heapTotal,
-          heapUsed: memoryUsage.heapUsed,
-          external: memoryUsage.external,
-        },
-        cpu: cpuUsage,
-        timestamp: new Date().toISOString(),
-      },
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+      cpu: process.cpuUsage(),
+      version: process.version,
+      platform: process.platform,
     };
   }
 }

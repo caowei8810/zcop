@@ -1,36 +1,53 @@
-import { Entity, Column, PrimaryGeneratedColumn, Index, CreateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
+import { Field, ObjectType } from '@nestjs/graphql';
 
 @Entity('audit_logs')
+@ObjectType()
+@Index(['userId', 'timestamp']) // Composite index for common query pattern
+@Index(['action', 'timestamp']) // Composite index for action-based queries
 export class AuditLog {
+  @Field(() => String)
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'user_id', type: 'uuid', nullable: true })
-  @Index()
-  userId: string;
+  @Field(() => String, { nullable: true })
+  @Column({ type: 'varchar', nullable: true, length: 100 })
+  @Index() // Individual index for fast lookups
+  userId?: string;
 
-  @Column({ type: 'varchar', length: 50 })
-  @Index()
-  action: string; // CREATE, UPDATE, DELETE, READ
-
+  @Field(() => String)
   @Column({ type: 'varchar', length: 100 })
-  @Index()
-  entity: string; // Entity name (e.g., 'User', 'Order', 'Customer')
+  @Index() // Index for action field
+  action: string;
 
-  @Column({ name: 'entity_id', type: 'varchar', length: 100 })
-  @Index()
-  entityId: string; // ID of the entity that was acted upon
+  @Field(() => String, { nullable: true })
+  @Column({ type: 'varchar', nullable: true, length: 255 })
+  resource?: string;
 
+  @Field(() => String, { nullable: true })
   @Column({ type: 'text', nullable: true })
-  oldValue: string; // Previous state of the entity (JSON string)
+  details?: string;
 
-  @Column({ type: 'text', nullable: true })
-  newValue: string; // New state of the entity (JSON string)
+  @Field(() => String)
+  @Column({ type: 'varchar', length: 45 }) // IP address
+  ipAddress: string;
 
-  @Column({ type: 'json', nullable: true })
-  metadata: Record<string, any>; // Additional information about the action
+  @Field(() => String, { nullable: true })
+  @Column({ type: 'varchar', nullable: true, length: 255 })
+  userAgent?: string;
 
-  @CreateDateColumn({ name: 'timestamp', type: 'timestamp' })
-  @Index()
+  @Field(() => Date)
+  @Column({ type: 'timestamp' })
+  @Index() // Index for timestamp queries
   timestamp: Date;
+
+  @Field(() => String, { nullable: true })
+  @Column({ type: 'varchar', nullable: true, length: 50 })
+  severity?: string; // INFO, WARN, ERROR
+
+  @CreateDateColumn({ type: 'timestamp' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ type: 'timestamp' })
+  updatedAt: Date;
 }

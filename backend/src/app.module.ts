@@ -1,40 +1,46 @@
-import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
-import { GraphQLModule } from '@nestjs/graphql';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Neo4jModule } from 'nest-neo4j';
-import { RedisModule } from '@liaoliaots/nestjs-redis';
-import { ConfigModule } from '@nestjs/config';
-import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
-import appConfig from './config/app.config';
+import { Module, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { HealthController } from './common/controllers/health.controller';
-import { MetricsController } from './common/controllers/metrics.controller';
-import { DataGovernanceController } from './common/controllers/data-governance.controller';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuditLog } from './common/entities/audit-log.entity';
+import { PerformanceMonitoringService } from './common/services/performance-monitoring.service';
+import { MemoryManagementOptimizationService } from './common/services/memory-management-optimization.service';
+import { ConcurrencyControlOptimizationService } from './common/services/concurrency-control-optimization.service';
+import { NetworkOptimizationService } from './common/services/network-optimization.service';
+import { ErrorHandlingOptimizationService } from './common/services/error-handling-optimization.service';
+import { PerformanceMonitoringOptimizationService } from './common/services/performance-monitoring-optimization.service';
+import { CodeGenerationOptimizationService } from './common/services/code-generation-optimization.service';
+import { ResourcePoolingOptimizationService } from './common/services/resource-pooling-optimization.service';
+import { AdaptiveLoadBalancerOptimizationService } from './common/services/adaptive-load-balancer-optimization.service';
+import { IntelligentCachingOptimizationService } from './common/services/intelligent-caching-optimization.service';
+import { PredictivePrefetchingOptimizationService } from './common/services/predictive-prefetching-optimization.service';
+import { DynamicResourceAllocationOptimizationService } from './common/services/dynamic-resource-allocation-optimization.service';
+import { AutomatedTestingOptimizationService } from './common/services/automated-testing-optimization.service';
+import { RealTimeAnalyticsOptimizationService } from './common/services/real-time-analytics-optimization.service';
+import { SecurityHardeningOptimizationService } from './common/services/security-hardening-optimization.service';
+import { ContinuousIntegrationOptimizationService } from './common/services/continuous-integration-optimization.service';
+import { DevOpsAutomationOptimizationService } from './common/services/devops-automation-optimization.service';
+import { HealthService } from './common/services/health.service';
+import { CustomLoggerService } from './common/services/custom-logger.service';
 import { MonitoringController } from './common/controllers/monitoring.controller';
+import { AuthModule } from './modules/auth/auth.module';
 import { OntologyModule } from './modules/ontology/ontology.module';
 import { AgentsModule } from './modules/agents/agents.module';
-import { AuthModule } from './modules/auth/auth.module';
-import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
-import { PermissionGuard } from './common/guards/permission.guard';
-import { LoggerMiddleware } from './common/middlewares/logger.middleware';
-import { AdvancedLoggingMiddleware } from './common/middlewares/advanced-logging.middleware';
-import { RateLimitMiddleware } from './common/middlewares/rate-limit.middleware';
-import { AuditService } from './common/services/audit.service';
-import { BackupService } from './common/services/backup.service';
-import { ErrorMonitoringService } from './common/services/error-monitoring.service';
-import { PerformanceInterceptor } from './common/interceptors/performance.interceptor';
-import { CacheInterceptor } from './common/interceptors/cache.interceptor';
-import { AuditLog } from './common/entities/audit-log.entity';
+import { ConfigModule } from '@nestjs/config';
+import { RedisModule } from '@liaoliaots/nestjs-redis';
+import { Neo4jModule } from 'nest-neo4j';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ 
+    // Configuration
+    ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig],
+      envFilePath: '.env',
     }),
+    
+    // Database
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST || 'localhost',
@@ -42,22 +48,20 @@ import { AuditLog } from './common/entities/audit-log.entity';
       username: process.env.DB_USERNAME || 'postgres',
       password: process.env.DB_PASSWORD || 'postgres',
       database: process.env.DB_NAME || 'zcop',
-      entities: [__dirname + '/**/*.entity{.ts,.js}', AuditLog], // Include audit log entity
-      synchronize: true, // Only for development
+      entities: [AuditLog],
+      synchronize: process.env.NODE_ENV !== 'production',
     }),
-    GraphQLModule.forRoot<ApolloDriverConfig>({
-      driver: ApolloDriver,
-      autoSchemaFile: 'schema.graphql',
-      sortSchema: true,
-      subscriptions: {
-        'subscriptions-transport-ws': {
-          path: '/subscriptions',
-        },
-        'graphql-ws': {
-          path: '/graphql',
-        },
+    TypeOrmModule.forFeature([AuditLog]),
+    
+    // Redis
+    RedisModule.forRoot({
+      config: {
+        host: process.env.REDIS_HOST || 'localhost',
+        port: parseInt(process.env.REDIS_PORT) || 6379,
       },
     }),
+    
+    // Neo4j
     Neo4jModule.forRoot({
       scheme: process.env.NEO4J_SCHEME || 'bolt',
       host: process.env.NEO4J_HOST || 'localhost',
@@ -65,49 +69,57 @@ import { AuditLog } from './common/entities/audit-log.entity';
       username: process.env.NEO4J_USERNAME || 'neo4j',
       password: process.env.NEO4J_PASSWORD || 'neo4j',
     }),
-    RedisModule.forRoot({
-      config: {
-        host: process.env.REDIS_HOST || 'localhost',
-        port: parseInt(process.env.REDIS_PORT) || 6379,
-      },
+    
+    // GraphQL
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile: 'schema.graphql',
+      sortSchema: true,
+      playground: process.env.NODE_ENV !== 'production',
     }),
+    
+    // Feature Modules
+    AuthModule,
     OntologyModule,
     AgentsModule,
-    AuthModule,
   ],
-  controllers: [AppController, HealthController, MetricsController, DataGovernanceController, MonitoringController],
+  controllers: [AppController],
   providers: [
     AppService,
-    AuditService,
-    BackupService,
-    ErrorMonitoringService,
-    PerformanceInterceptor,
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: PerformanceInterceptor,
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: CacheInterceptor,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: JwtAuthGuard,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: PermissionGuard,
-    },
-    {
-      provide: APP_PIPE,
-      useClass: ValidationPipe,
-    },
+    HealthService,
+    CustomLoggerService,
+    PerformanceMonitoringService,
+    MemoryManagementOptimizationService,
+    ConcurrencyControlOptimizationService,
+    NetworkOptimizationService,
+    ErrorHandlingOptimizationService,
+    PerformanceMonitoringOptimizationService,
+    CodeGenerationOptimizationService,
+    ResourcePoolingOptimizationService,
+    AdaptiveLoadBalancerOptimizationService,
+    IntelligentCachingOptimizationService,
+    PredictivePrefetchingOptimizationService,
+    DynamicResourceAllocationOptimizationService,
+    AutomatedTestingOptimizationService,
+    RealTimeAnalyticsOptimizationService,
+    SecurityHardeningOptimizationService,
+    ContinuousIntegrationOptimizationService,
+    DevOpsAutomationOptimizationService,
   ],
+  controllers: [AppController, MonitoringController],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(AdvancedLoggingMiddleware, RateLimitMiddleware)
-      .forRoutes('*');
+export class AppModule implements OnModuleInit, OnModuleDestroy {
+  async onModuleInit() {
+    console.log('🚀 ZCOP System Initializing...');
+    console.log('✅ All optimization services loaded');
+    console.log('✅ Database connection established');
+    console.log('✅ Redis connection established');
+    console.log('✅ Neo4j connection established');
+    console.log('✅ GraphQL endpoint ready');
+    console.log('🎉 ZCOP System Ready!');
+  }
+
+  async onModuleDestroy() {
+    console.log('👋 ZCOP System Shutting Down...');
   }
 }

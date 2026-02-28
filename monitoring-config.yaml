@@ -1,0 +1,152 @@
+# ZCOP System Monitoring Dashboard Configuration
+
+# Prometheus Metrics Endpoint
+METRICS_PATH: /metrics
+METRICS_PORT: 9090
+
+# Dashboard Panels Configuration
+
+panels:
+  - name: "System Health Overview"
+    type: "singlestat"
+    datasource: "prometheus"
+    targets:
+      - expr: "up{job='zcop-backend'}"
+        legendFormat: "Backend Status"
+      - expr: "up{job='zcop-frontend'}"
+        legendFormat: "Frontend Status"
+    thresholds: "0,1"
+    colors: ["red", "green"]
+
+  - name: "API Request Rate"
+    type: "graph"
+    datasource: "prometheus"
+    targets:
+      - expr: "rate(http_requests_total[5m])"
+        legendFormat: "{{method}} {{handler}}"
+    yAxis:
+      format: "reqps"
+
+  - name: "API Response Time"
+    type: "graph"
+    datasource: "prometheus"
+    targets:
+      - expr: "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))"
+        legendFormat: "95th percentile"
+      - expr: "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket[5m]))"
+        legendFormat: "50th percentile"
+    yAxis:
+      format: "s"
+
+  - name: "Database Connections"
+    type: "graph"
+    datasource: "prometheus"
+    targets:
+      - expr: "pg_stat_activity_count"
+        legendFormat: "Active Connections"
+      - expr: "pg_stat_activity_count{state='idle'}"
+        legendFormat: "Idle Connections"
+    yAxis:
+      format: "short"
+
+  - name: "Memory Usage"
+    type: "graph"
+    datasource: "prometheus"
+    targets:
+      - expr: "process_resident_memory_bytes"
+        legendFormat: "RSS Memory"
+      - expr: "nodejs_heap_used_bytes"
+        legendFormat: "Heap Used"
+    yAxis:
+      format: "bytes"
+
+  - name: "CPU Usage"
+    type: "graph"
+    datasource: "prometheus"
+    targets:
+      - expr: "rate(process_cpu_seconds_total[1m])"
+        legendFormat: "CPU Usage"
+    yAxis:
+      format: "percentunit"
+
+  - name: "Cache Hit Ratio"
+    type: "graph"
+    datasource: "prometheus"
+    targets:
+      - expr: "cache_hits / (cache_hits + cache_misses)"
+        legendFormat: "Hit Ratio"
+    yAxis:
+      format: "percentunit"
+
+  - name: "Active Users"
+    type: "graph"
+    datasource: "prometheus"
+    targets:
+      - expr: "count(count by (user) (user_last_seen_timestamp))"
+        legendFormat: "Active Users"
+    yAxis:
+      format: "short"
+
+# Alerting Rules
+
+alerts:
+  - name: "High Error Rate"
+    condition: "rate(http_requests_total{code=~'5..'}[5m]) > 0.05"
+    for: "2m"
+    labels:
+      severity: "critical"
+    annotations:
+      summary: "High error rate detected"
+      description: "More than 5% of requests resulted in 5xx errors over the last 5 minutes"
+
+  - name: "High Latency"
+    condition: "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1"
+    for: "5m"
+    labels:
+      severity: "warning"
+    annotations:
+      summary: "High latency detected"
+      description: "95th percentile of request latency is above 1 second"
+
+  - name: "Low Cache Hit Ratio"
+    condition: "cache_hits / (cache_hits + cache_misses) < 0.8"
+    for: "10m"
+    labels:
+      severity: "warning"
+    annotations:
+      summary: "Low cache hit ratio"
+      description: "Cache hit ratio dropped below 80%"
+
+  - name: "System Down"
+    condition: "up == 0"
+    for: "1m"
+    labels:
+      severity: "critical"
+    annotations:
+      summary: "System is down"
+      description: "ZCOP system is not responding"
+
+# Dashboard Refresh Intervals
+refresh_intervals:
+  - "5s"
+  - "10s"
+  - "30s"
+  - "1m"
+  - "5m"
+  - "15m"
+  - "30m"
+  - "1h"
+  - "2h"
+  - "1d"
+
+# Time Range Defaults
+time_options:
+  - "5m"
+  - "15m"
+  - "1h"
+  - "6h"
+  - "12h"
+  - "24h"
+  - "2d"
+  - "7d"
+  - "30d"

@@ -1,0 +1,172 @@
+name: ZCOP Platform CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x]
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: zcop_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      neo4j:
+        image: neo4j:5-community
+        env:
+          NEO4J_AUTH: neo4j/testpassword
+        options: >-
+          --health-cmd "cypher-shell -u neo4j -p testpassword 'MATCH (n) RETURN n LIMIT 1'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 7687:7687
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: |
+          backend/package-lock.json
+          frontend/package-lock.json
+    
+    - name: Install dependencies (Backend)
+      run: |
+        cd backend
+        npm ci
+    
+    - name: Install dependencies (Frontend)
+      run: |
+        cd frontend
+        npm ci
+    
+    - name: Run backend linting
+      run: |
+        cd backend
+        npm run lint
+    
+    - name: Run backend tests
+      run: |
+        cd backend
+        npm run test
+      env:
+        DB_HOST: localhost
+        DB_PORT: 5432
+        DB_USERNAME: postgres
+        DB_PASSWORD: postgres
+        DB_NAME: zcop_test
+        NEO4J_HOST: localhost
+        NEO4J_PORT: 7687
+        NEO4J_USERNAME: neo4j
+        NEO4J_PASSWORD: testpassword
+        REDIS_HOST: localhost
+        REDIS_PORT: 6379
+    
+    - name: Run frontend tests
+      run: |
+        cd frontend
+        npm run test:ci
+
+  build-and-push:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+    
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+    
+    - name: Build and push backend image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        cd backend
+        docker build -t $ECR_REGISTRY/zcop-backend:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/zcop-backend:$IMAGE_TAG
+    
+    - name: Build and push frontend image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        cd frontend
+        docker build -t $ECR_REGISTRY/zcop-frontend:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/zcop-frontend:$IMAGE_TAG
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+    
+    - name: Deploy to EKS
+      run: |
+        # Install kubectl
+        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+        
+        # Install eksctl
+        curl -Lo eksctl https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_Linux_amd64.tar.gz
+        tar -xzf eksctl_Linux_amd64.tar.gz
+        sudo mv eksctl /usr/local/bin
+        
+        # Configure kubectl
+        aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }}
+        
+        # Update deployments with new image tags
+        kubectl set image deployment/zcop-backend backend=$ECR_REGISTRY/zcop-backend:$IMAGE_TAG -n zcop
+        kubectl set image deployment/zcop-frontend frontend=$ECR_REGISTRY/zcop-frontend:$IMAGE_TAG -n zcop
+        
+        # Wait for rollout to complete
+        kubectl rollout status deployment/zcop-backend -n zcop
+        kubectl rollout status deployment/zcop-frontend -n zcop

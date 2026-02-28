@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AgentsResolver } from './resolvers/agents.resolver';
+import { AgentsController } from './controllers/agents.controller';
 import { AgentsService } from './services/agents.service';
 import { WorkflowDefinition } from './entities/workflow-definition.entity';
 import { AgentSession } from './entities/agent-session.entity';
@@ -17,6 +18,9 @@ import { WorkflowExecution } from './entities/workflow-execution.entity';
   providers: [
     AgentsResolver,
     AgentsService,
+  ],
+  controllers: [
+    AgentsController
   ],
   exports: [AgentsService],
 })

@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:13
+    container_name: zcop-postgres
+    environment:
+      POSTGRES_DB: zcop
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - zcop_network
+
+  neo4j:
+    image: neo4j:4.4
+    container_name: zcop-neo4j
+    environment:
+      NEO4J_AUTH: neo4j/neo4j
+    ports:
+      - "7687:7687"
+      - "7474:7474"
+    volumes:
+      - neo4j_data:/data
+    networks:
+      - zcop_network
+
+  redis:
+    image: redis:6-alpine
+    container_name: zcop-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - zcop_network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: zcop-backend
+    ports:
+      - "3000:3000"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: zcop
+      NEO4J_HOST: neo4j
+      NEO4J_PORT: 7687
+      NEO4J_USERNAME: neo4j
+      NEO4J_PASSWORD: neo4j
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - postgres
+      - neo4j
+      - redis
+    networks:
+      - zcop_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: zcop-frontend
+    ports:
+      - "3001:80"
+    depends_on:
+      - backend
+    networks:
+      - zcop_network
+
+volumes:
+  postgres_data:
+  neo4j_data:
+  redis_data:
+
+networks:
+  zcop_network:
+    driver: bridge

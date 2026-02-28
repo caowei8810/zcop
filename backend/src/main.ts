@@ -1,79 +1,91 @@
 import { NestFactory } from '@nestjs/core';
+import { ValidationPipe, Logger, INestApplication } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { ConfigService } from '@nestjs/config';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
-import * as helmet from 'helmet';
-import * as express from 'express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const logger = new Logger('Bootstrap');
   
-  // Security headers
-  app.use(helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        imgSrc: ["'self'", "data:", "https:"],
-        scriptSrc: ["'self'"],
-        fontSrc: ["'self'", "https:", "data:"],
-      },
-    },
-    hsts: {
-      maxAge: 31536000, // 1 year in seconds
-      includeSubDomains: true,
-      preload: true,
-    },
-  }));
-  
-  // Enable CORS with more specific configuration for production
-  app.enableCors({
-    origin: process.env.CORS_ORIGIN || '*',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true,
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
-  });
-  
-  // Global validation pipe
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-    }),
-  );
-  
-  // Global exception filter
-  app.useGlobalFilters(new AllExceptionsFilter());
-  
-  // Increase payload limits for large ontology uploads
-  app.use(express.json({ limit: '50mb' }));
-  app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-  
-  // Setup Swagger for API documentation (only in non-production environments)
-  if (process.env.NODE_ENV !== 'production') {
+  try {
+    // Create application instance
+    const app = await NestFactory.create(AppModule, {
+      logger: ['error', 'warn', 'log', 'debug', 'verbose'],
+    });
+    
+    // Security middleware
+    app.use(helmet());
+    
+    // CORS configuration
+    app.enableCors({
+      origin: process.env.CORS_ORIGIN || '*',
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+      credentials: true,
+    });
+    
+    // Global validation pipe
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+        transformOptions: {
+          enableImplicitConversion: true,
+        },
+      }),
+    );
+    
+    // API prefix
+    app.setGlobalPrefix('api');
+    
+    // Swagger documentation
     const config = new DocumentBuilder()
-      .setTitle('ZeroCode Ontology Platform (ZCOP)')
-      .setDescription('API documentation for the ZeroCode Ontology Platform')
-      .setVersion('1.0')
+      .setTitle('ZCOP API')
+      .setDescription('ZeroCode Ontology Platform - Commercial-Grade API Documentation')
+      .setVersion('1.0.0')
       .addBearerAuth()
+      .addTag('health', 'Health check endpoints')
+      .addTag('auth', 'Authentication endpoints')
+      .addTag('ontology', 'Ontology management')
+      .addTag('agents', 'AI agents')
+      .addTag('monitoring', 'System monitoring')
       .build();
     
     const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('swagger', app, document);
-  }
-  
-  // Set global prefix
-  app.setGlobalPrefix('api');
-  
-  const port = process.env.PORT || 3000;
-  await app.listen(port);
-  
-  console.log(`🚀 Application is running on: http://localhost:${port}`);
-  if (process.env.NODE_ENV !== 'production') {
-    console.log(`📄 API Documentation available at: http://localhost:${port}/swagger`);
+    SwaggerModule.setup('api-docs', app, document, {
+      swaggerOptions: {
+        persistAuthorization: true,
+      },
+    });
+    
+    // Get port from config
+    const configService = app.get(ConfigService);
+    const port = configService.get('PORT') || 3000;
+    
+    // Start application
+    await app.listen(port);
+    
+    logger.log(`🚀 ZCOP Server running on port ${port}`);
+    logger.log(`📚 API Documentation: http://localhost:${port}/api-docs`);
+    logger.log(`🏥 Health Check: http://localhost:${port}/api/health`);
+    logger.log(`🎮 GraphQL Playground: http://localhost:${port}/graphql`);
+    
+    // Graceful shutdown
+    const gracefulShutdown = async (signal: string) => {
+      logger.log(`${signal} received. Starting graceful shutdown...`);
+      await app.close();
+      process.exit(0);
+    };
+    
+    process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+    process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+    
+  } catch (error) {
+    logger.error(`Failed to start server: ${error.message}`);
+    process.exit(1);
   }
 }
+
 bootstrap();

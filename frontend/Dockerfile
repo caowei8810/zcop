@@ -1,4 +1,7 @@
-FROM node:18-alpine
+# Multi-stage build for the ZCOP frontend
+
+# Build stage
+FROM node:18-alpine AS builder
 
 WORKDIR /app
 
@@ -6,7 +9,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm ci
 
 # Copy source code
 COPY . .
@@ -14,8 +17,17 @@ COPY . .
 # Build the application
 RUN npm run build
 
-# Expose port
-EXPOSE 5173
+# Production stage
+FROM nginx:alpine
 
-# Start the application
-CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0"]
+# Copy custom nginx configuration
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Copy built application from builder stage
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Expose port
+EXPOSE 80
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]
